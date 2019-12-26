@@ -1,40 +1,36 @@
 package agent;
 
 import java.io.ByteArrayInputStream;
-import java.lang.instrument.ClassFileTransformer; // transformer?
+import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
+//import com.sun.tools.javac.code.Attribute;
+//import javassist.ClassPool;
+//import javassist.CtClass;
+//import javassist.CtMethod;
+//import javassist.bytecode.*;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.ClassVisitor;
 
 public class TraceTransformer implements ClassFileTransformer {
+
+
     public byte[] transform(ClassLoader loader, String className, Class classBeingRedefined, ProtectionDomain protectionDomain,
                             byte[] classfileBuffer) throws IllegalClassFormatException {
         byte[] byteCode = classfileBuffer;
-        if(className.equals("application/Lion")){
-            System.out.println("Instrumenting...");
-            try{
-                // ClassPool?
-                ClassPool classPool = ClassPool.getDefault();
-                CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
-                CtMethod[] methods = ctClass.getDeclaredMethods();
-                for (CtMethod method : methods){
-                    method.addLocalVariable("startTime",CtClass.longType);
-                    method.insertBefore("startTime = System.nanoTime();");
-                    method.insertAfter("System.out.println(\"Execution Duration "
-                            + "(nano sec): \"+ (System.nanoTime() - startTime) );");
-                }
-                byteCode = ctClass.toBytecode();
-                ctClass.detach();
-                System.out.println("Instrumentation complete.");
-            }
-            catch(Throwable ex){
-                System.out.println("Exception: " + ex);
-                ex.printStackTrace();
-            }
+
+        if(className.startsWith("java")||className.startsWith("sun")||className.startsWith("agent")||className.startsWith("org")){
+            return byteCode;
         }
-        return byteCode;
+//        System.out.println("==================Instrumenting...===============");
+//        System.out.println("=================="+ className +"=================");
+        ClassReader cr = new ClassReader(classfileBuffer);
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES); // ??
+        ClassAdapter ct = new ClassAdapter(cw);
+        cr.accept(ct,0);
+        return cw.toByteArray();
+
     }
 }
