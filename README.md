@@ -1,5 +1,5 @@
 # jmtrace  
   
 for test:   
-[java -javaagent=agent.jar -jar applicaiton.jar] 
+	java -javaagent=agent.jar -jar applicaiton.jar  
   
