@@ -1,0 +1,12 @@
+#!/bin/bash
+#author: Liu Xutong
+
+#echo "$0"; #jmtrace
+#echo "$1"; #-jar
+#echo "$2"; #something.jar
+#echo "$3"; #"hello world"
+
+#echo "${2%.*}"; #something
+
+
+java -javaagent:agent.jar -jar "$2"
